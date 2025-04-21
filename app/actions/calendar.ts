@@ -17,13 +17,14 @@ export async function createCalendarEvent(formData: FormData) {
   try {
     // Parse and validate the form data
     const data = {
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
-      subject: formData.get("subject") as string,
-      message: formData.get("message") as string,
-      eventDate: formData.get("eventDate") as string,
-      eventTime: formData.get("eventTime") as string,
-    }
+  name: formData.get("name")?.toString() || "",
+  email: formData.get("email")?.toString() || "",
+  subject: formData.get("subject")?.toString() || "",
+  message: formData.get("message")?.toString() || "",
+  eventDate: formData.get("eventDate")?.toString() || "",
+  eventTime: formData.get("eventTime")?.toString() || "",
+}
+
 
     const validatedData = formSchema.parse(data)
 
