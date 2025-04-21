@@ -3,7 +3,6 @@
 import { google } from "googleapis"
 import { z } from "zod"
 
-// Define the schema for form validation
 const formSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
@@ -15,45 +14,34 @@ const formSchema = z.object({
 
 export async function createCalendarEvent(formData: FormData) {
   try {
-    // Parse and validate the form data
     const data = {
-  name: formData.get("name")?.toString() || "",
-  email: formData.get("email")?.toString() || "",
-  subject: formData.get("subject")?.toString() || "",
-  message: formData.get("message")?.toString() || "",
-  eventDate: formData.get("eventDate")?.toString() || "",
-  eventTime: formData.get("eventTime")?.toString() || "",
-}
+      name: formData.get("name")?.toString() || "",
+      email: formData.get("email")?.toString() || "",
+      subject: formData.get("subject")?.toString() || "",
+      message: formData.get("message")?.toString() || "",
+      eventDate: formData.get("eventDate")?.toString() || "",
+      eventTime: formData.get("eventTime")?.toString() || "",
+    }
 
+    // Log for debugging
+    if (process.env.NODE_ENV === "development") {
+      console.log("Received form data:", data)
+    }
 
     const validatedData = formSchema.parse(data)
 
-    // Set up OAuth2 client with your credentials
-    const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI,
-    )
-
-    // Set credentials using a refresh token or other method
-    // For this example, we'll use a JWT client approach which is better for server-side applications
     const jwtClient = new google.auth.JWT(
       process.env.GOOGLE_CLIENT_EMAIL,
       undefined,
       process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      ["https://www.googleapis.com/auth/calendar"],
+      ["https://www.googleapis.com/auth/calendar"]
     )
 
-    // Create calendar client
     const calendar = google.calendar({ version: "v3", auth: jwtClient })
 
-    // Combine date and time
     const eventDateTime = new Date(`${validatedData.eventDate}T${validatedData.eventTime}`)
-
-    // Set end time to 1 hour after start time
     const endDateTime = new Date(eventDateTime.getTime() + 60 * 60 * 1000)
 
-    // Create the event
     const event = {
       summary: validatedData.subject,
       description: `From: ${validatedData.name} (${validatedData.email})\n\n${validatedData.message}`,
@@ -68,11 +56,10 @@ export async function createCalendarEvent(formData: FormData) {
       attendees: [{ email: validatedData.email }],
     }
 
-    // Insert the event into your calendar
     const response = await calendar.events.insert({
-      calendarId: "primary", // This will use your primary calendar
+      calendarId: "primary",
       requestBody: event,
-      sendUpdates: "all", // This will send email notifications to attendees
+      sendUpdates: "all",
     })
 
     return {
