@@ -58,11 +58,12 @@ export default function ContactForm() {
     try {
       // Create a FormData object to pass to the server action
       const formData = new FormData()
-      Object.entries(values).forEach(([key, value]) => {
-        if (value !== undefined) {
-          formData.append(key, value.toString())
-        }
-      })
+     Object.entries(values).forEach(([key, value]) => {
+  if (value !== undefined && value !== null) {
+    formData.append(key, value.toString())
+  }
+})
+
 
       // If the user wants to add to calendar, call the server action
       if (values.addToCalendar && values.eventDate && values.eventTime) {
